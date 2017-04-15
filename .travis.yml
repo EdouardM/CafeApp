@@ -1,5 +1,11 @@
 #CafeApp/.travis.yml
 
 language: csharp
+
+#To avoid Travis CI failing because of permissions denied on build.sh
+# http://stackoverflow.com/questions/33820638/travis-yml-gradlew-permission-denied
+# This kind of solution doesn't change the permission in your git repo, but just changes the permission runtime in the execution
+before_install:
+    - chmod +x build.sh
 script:
     - ./build.sh
