@@ -1,6 +1,8 @@
 namespace CafeApp 
 
     module CommandHandlers =
+        open CafeApp.Result
+        open CafeApp.Errors
         open CafeApp.Domain
         open CafeApp.Events
 
@@ -8,19 +10,12 @@ namespace CafeApp
             match command with
                 | OpenTab tab -> 
                     match state with
-                        | ClosedTab _ -> [ TabOpened { Id = System.Guid.NewGuid(); TableNumber = 1 } ]
-                        | OpenedTab _ -> failwith "unexpected command"
-
-
-        let apply state event = 
+                        | ClosedTab _ -> Ok [ TabOpened { Id = tab.Id ; TableNumber = tab.TableNumber } ]
+                        | OpenedTab _ -> Failure TableAlreadyOpened
+        let evolve state event = 
             match state, event with
-                | ClosedTab _, TabOpened evinfo -> 
-                    OpenedTab { Id = evinfo.Id; TableNumber = evinfo.TableNumber }
+                | ClosedTab _, TabOpened tab    -> OpenedTab tab
                 | OpenedTab _, TabOpened evinfo -> 
                     failwith "unexpected event"
         
-        let evolve state command =
-            let events = decide command state
-            let newState = List.fold apply state events
-            (newState, events)
             
