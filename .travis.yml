@@ -1,0 +1,5 @@
+#CafeApp/.travis.yml
+
+language: csharp
+script:
+    ./build.sh
