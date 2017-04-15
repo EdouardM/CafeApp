@@ -23,5 +23,4 @@ namespace CafeApp
             let events = decide command state
             let newState = List.fold apply state events
             (newState, events)
-
-        
+            
