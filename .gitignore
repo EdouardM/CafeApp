@@ -9,6 +9,9 @@ Debug
 obj
 bin
 
+##Ignore tests build directories 
+tests/
+
 
 ### Linux ###
 *~
