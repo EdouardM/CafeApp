@@ -2,4 +2,4 @@
 
 language: csharp
 script:
-    ./build.sh "BuildApp"
+    - ./build.sh
