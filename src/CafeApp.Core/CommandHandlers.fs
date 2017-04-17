@@ -12,6 +12,7 @@ namespace CafeApp
                     match state with
                         | ClosedTab _ -> Ok [ TabOpened { Id = tab.Id ; TableNumber = tab.TableNumber } ]
                         | OpenedTab _ -> Failure TableAlreadyOpened
+
         let evolve state event = 
             match state, event with
                 | ClosedTab _, TabOpened tab    -> OpenedTab tab

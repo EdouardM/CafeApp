@@ -4,3 +4,6 @@ namespace CafeApp
         
         type Error = 
             | TableAlreadyOpened
+            | CannotOrderWithClosedTable
+            | CannotPlaceEmptyOrder
+            | OrderAlreadyPlaced
