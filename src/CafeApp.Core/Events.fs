@@ -10,18 +10,8 @@ namespace CafeApp
 
         type Event = 
             | TabOpened of Tab
-            | DrinksOrdered of DrinksOrdered 
-            | FoodsOrdered of FoodsOrdered
-
-        and DrinksOrdered = {
-            Id : Guid
-            Drinks : Drink list
-        }
-
-        and FoodsOrdered = {
-            Id : Guid
-            Foods : Food list
-        }
+            | OrderPlaced of Order 
+            
 
         type State = 
             | ClosedTab     of Tab option
