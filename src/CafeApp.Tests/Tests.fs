@@ -22,8 +22,8 @@ let (==) actual expected = Expect.equal actual (Ok expected) "Events should matc
 let (=!) actual error = Expect.equal actual (Failure error) "Errors should match"
 
 [<Tests>]
-let tests =
-  testList "State Transitions" [
+let OpenTabTests =
+  testList "Open Tab Transition" [
     testCase "Can Open a new Tab" <| fun _ ->
       let tab = { Id = Guid.NewGuid() ; TableNumber = 1}
       []
@@ -35,7 +35,10 @@ let tests =
       [ TabOpened tab ]
       =>  OpenTab tab
       =! TableAlreadyOpened
-
+  ]
+[<Tests>]
+let PlaceOrderTests = 
+  testList "Place Order Transition" [
     testProperty "Can place only drinks order if tab opened" <| fun _ -> 
       let tab = { Id = Guid.NewGuid() ; TableNumber = 12 }
       let arb = genDrinksNonEmpty |> Arb.fromGen
