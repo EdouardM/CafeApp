@@ -41,29 +41,29 @@ let tests =
       let arb = genDrinksNonEmpty |> Arb.fromGen
       
       Prop.forAll arb ( fun drinks -> 
+      let order = { Tab = tab; Drinks = drinks ; Foods = [] }
       [ TabOpened tab ]
-      => PlaceOrder { Tab = tab; Drinks = drinks ; Foods = [] }
-      == [ DrinksOrdered { Id = tab.Id; Drinks = drinks } ] )
+      => PlaceOrder order
+      == [ OrderPlaced order ] )
 
     testProperty "Can place only foods order if tab opened" <| fun _ -> 
       let tab = { Id = Guid.NewGuid() ; TableNumber = 12 }
       let arb = genFoodsNonEmpty |> Arb.fromGen
 
       Prop.forAll arb (fun foods -> 
+      let order = { Tab = tab; Drinks = []  ; Foods = foods }
       [ TabOpened tab ]
-      => PlaceOrder { Tab = tab; Drinks = [] ; Foods = foods }
-      == [ FoodsOrdered { Id = tab.Id; Foods = foods  } ])
+      => PlaceOrder order
+      == [ OrderPlaced order ] )
   
     testProperty "Can place any order if tab opened" <| fun _ -> 
       let tab = { Id = Guid.NewGuid() ; TableNumber = 12 }
-      let arb = genDrinksAndFoodsNonEmpty |> Arb.fromGen
+      let arb = genOrder |> Arb.fromGen
       
-      Prop.forAll arb (fun (drinks, foods) -> 
+      Prop.forAll arb (fun order -> 
       [ TabOpened tab ]
-      => PlaceOrder { Tab = tab; Drinks = drinks ; Foods = foods }
-      == [  FoodsOrdered { Id = tab.Id; Foods = foods  } ; 
-            DrinksOrdered { Id = tab.Id; Drinks = drinks }
-      ])
+      => PlaceOrder order
+      == [  OrderPlaced order] )
     
     testCase "Cannot place empty order" <| fun _ -> 
         let tab = { Id = Guid.NewGuid() ; TableNumber = 1}
@@ -84,7 +84,7 @@ let tests =
         let drink = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
         let order = { Tab = tab; Drinks = [drink]; Foods = [] }
         
-        [TabOpened tab; DrinksOrdered { Id = tab.Id; Drinks = [drink] } ]
+        [TabOpened tab; OrderPlaced order  ]
         =>  PlaceOrder order
         =! OrderAlreadyPlaced
       

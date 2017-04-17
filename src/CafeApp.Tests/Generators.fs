@@ -2,11 +2,18 @@ module Generators
 open System
 open Expecto
 open FsCheck
+
 open CafeApp.Result
 open CafeApp.Errors
 open CafeApp.Domain
 open CafeApp.Events
 open CafeApp.CommandHandlers
+
+
+let genTab = 
+    Arb.generate<Tab>
+    |> Gen.filter(fun tab -> 
+        tab.TableNumber > 0) 
 
 let genItem =
     Arb.generate<Item>
@@ -32,3 +39,11 @@ let genFoodsNonEmpty =
     |> Gen.nonEmptyListOf
 
 let genDrinksAndFoodsNonEmpty = Gen.zip genDrinksNonEmpty genFoodsNonEmpty
+
+let genOrder = 
+    gen {
+        let! tab = genTab
+        let! drinks, foods = genDrinksAndFoodsNonEmpty
+        let order = {Tab = tab; Drinks = drinks; Foods = foods }
+        return order
+    }
