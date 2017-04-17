@@ -8,7 +8,17 @@ NUGET
       Argu (>= 3.7)
       FSharp.Core (>= 3.1.2.5)
       Mono.Cecil (>= 0.9.6.4)
+    Expecto.FsCheck (4.1.1)
+      Expecto (>= 4.1.1)
+      FsCheck (>= 2.8)
+      FSharp.Core (>= 3.1.2.5)
+    Expecto.PerfUtil (1.0.12)
+      Expecto (>= 1.0.12)
+      FSharp.Core (>= 3.1.2.5)
+      PerfUtil (>= 0.1.8)
     FAKE (4.58.6)
+    FsCheck (2.8)
+      FSharp.Core (>= 3.1.2.5)
     FSharp.Core (4.1.12)
       System.Collections (>= 4.0.11) - framework: >= netstandard16
       System.Console (>= 4.0) - framework: >= netstandard16
@@ -86,6 +96,7 @@ NUGET
       System.Threading.Timer (>= 4.3) - framework: >= net451, >= netstandard12
       System.Xml.ReaderWriter (>= 4.3) - framework: >= netstandard10
       System.Xml.XDocument (>= 4.3) - framework: >= netstandard10
+    PerfUtil (0.1.8)
     runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl (4.3) - framework: >= net463, >= netstandard16
     runtime.fedora.23-x64.runtime.native.System.Security.Cryptography.OpenSsl (4.3) - framework: >= net463, >= netstandard16
     runtime.fedora.24-x64.runtime.native.System.Security.Cryptography.OpenSsl (4.3) - framework: >= net463, >= netstandard16
