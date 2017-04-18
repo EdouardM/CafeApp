@@ -44,8 +44,8 @@
       <Paket>True</Paket>
     </Content>
     <Compile Include="Result.fs" />
-    <Compile Include="Errors.fs" />
     <Compile Include="Domain.fs" />
+    <Compile Include="Errors.fs" />
     <Compile Include="Events.fs" />
     <Compile Include="CommandHandlers.fs" />
     <None Include="Script.fsx" />

@@ -49,7 +49,12 @@ Concretely, an aggregate is either:
             Drinks  : Drink list    
             Tab     : Tab
         }
-
+        
+(*
+    Let's revisit our domain logic before we get started with implementing this transition. 
+    If an order contains Drink, Waiter will serve it immediately. 
+    But, if it includes food, Chef should prepare the food first and then the Waiter serve the food
+*)
         type InProgressOrder = {
             PlacedOrder     : Order
             ServedDrinks    : Drink list

@@ -92,3 +92,66 @@ let PlaceOrderTests =
         =! OrderAlreadyPlaced
       
   ]
+[<Tests>]
+let ServeDrinkTests = 
+  testList "Serve Drink Transition" [
+    testCase "Can serve one drink in one placed order" <| fun _ -> 
+        let tab = { Id = Guid.NewGuid() ; TableNumber = 1}
+        let lemonade =  Drink { MenuNumber = 2; Price = 1.5m; Name = "Lemonade" }
+        let coke = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
+        let order = { Tab = tab; Drinks = [coke; lemonade]; Foods = [] }
+        [ TabOpened tab; OrderPlaced order ]
+        =>  ServeDrink (coke, tab.Id)
+        == [ DrinkServed (coke, tab.Id) ]
+
+    testCase "Cannot serve one not ordered drink in one placed order" <| fun _ -> 
+        let tab = { Id = Guid.NewGuid() ; TableNumber = 1}
+        let lemonade =  Drink { MenuNumber = 2; Price = 1.5m; Name = "Lemonade" }
+        let coke = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
+        let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [] }
+        [ TabOpened tab; OrderPlaced order ]
+        =>  ServeDrink (coke, tab.Id)
+        =! CannotServeNonOrderedDrink coke
+
+    testCase "Can serve one drink for order with one drink" <| fun _ -> 
+        let tab = { Id = Guid.NewGuid() ; TableNumber = 1}
+        let coke = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
+        let order = { Tab = tab; Drinks = [ coke ]; Foods = [] }
+        [ TabOpened tab; OrderPlaced order]
+        =>  ServeDrink (coke, tab.Id)
+        == [ DrinkServed (coke, tab.Id); OrderServed order ]
+
+    testCase "Cannot serve one drink more times than ordered" <| fun _ -> 
+        let tab = { Id = Guid.NewGuid() ; TableNumber = 1}
+        let lemonade =  Drink { MenuNumber = 2; Price = 1.5m; Name = "Lemonade" }
+        let coke = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
+        let order = { Tab = tab; Drinks = [ coke; lemonade ]; Foods = [] }
+        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id) ]
+        =>  ServeDrink (coke, tab.Id)
+        =! CannotServeNonOrderedDrink coke
+
+    testCase "Cannot serve one drink on a served order" <| fun _ -> 
+        let tab = { Id = Guid.NewGuid() ; TableNumber = 1}
+        let lemonade =  Drink { MenuNumber = 2; Price = 1.5m; Name = "Lemonade" }
+        let coke = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
+        let order = { Tab = tab; Drinks = [ coke ]; Foods = [] }
+        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed order ]
+        =>  ServeDrink (coke, tab.Id)
+        =! OrderAlreadyServed
+
+    testCase "Cannot serve one drink for a non placed order" <| fun _ -> 
+        let tab = { Id = Guid.NewGuid() ; TableNumber = 1}
+        let lemonade =  Drink { MenuNumber = 2; Price = 1.5m; Name = "Lemonade" }
+        let coke = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
+        let order = { Tab = tab; Drinks = [coke; lemonade]; Foods = [] }
+        [ TabOpened tab ]
+        =>  ServeDrink (coke, tab.Id)
+        =! CannotServeNonPlacedOrder
+
+    testCase "Cannot serve one drink to a closed tab" <| fun _ -> 
+        let coke = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
+        [ ]
+        =>  ServeDrink (coke, Guid.NewGuid())
+        =! CannotServeClosedTab
+
+]
