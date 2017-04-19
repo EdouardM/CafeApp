@@ -8,12 +8,15 @@ namespace CafeApp
             | OpenTab       of Tab
             | PlaceOrder    of Order
             | ServeDrink    of Drink * Guid
+            | PrepareFood   of Food * Guid
         
         type Event = 
             | TabOpened of Tab
             | OrderPlaced of Order 
+            | FoodPrepared of Food * Guid
             | DrinkServed of Drink * Guid
             | OrderServed of Order
+
 
         type State = 
             | ClosedTab         of Tab option
