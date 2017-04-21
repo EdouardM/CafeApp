@@ -2,11 +2,15 @@ open System
 
 #load "Result.fs"
 #load "Domain.fs"
+#load "Commands.fs"
+#load "States.fs"
 #load "Events.fs"
 #load "Errors.fs"
 #load "./CommandHandlers.fs"
 open CafeApp.Result
 open CafeApp.Domain
+open CafeApp.Commands
+open CafeApp.State
 open CafeApp.Events
 open CafeApp.Errors
 open CafeApp.CommandHandlers
@@ -37,16 +41,12 @@ let sandwich = Food { MenuNumber = 30; Price = 5.5m; Name = "Sandwich" }
 
 
 let order = { Tab = tab; Drinks = [ coke; lemonade ]; Foods = [salad; cookie; sandwich] }
+        
+[ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id) ]
+|> List.fold (evolve) (ClosedTab None) 
 
 let actual = 
     [   TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); DrinkServed (lemonade, tab.Id);
         FoodPrepared (salad, tab.Id); FoodPrepared (cookie, tab.Id)
     ]
     |> List.fold (evolve) (ClosedTab None) 
-let expected = OrderInProgress { 
-    PlacedOrder = { order with Drinks = []; Foods = [sandwich] } ; 
-    ServedDrinks = [lemonade; coke]; 
-    ServedFoods  = []
-    PreparedFoods = [cookie; salad] } 
-
-actual = expected
