@@ -57,6 +57,8 @@ Concretely, an aggregate is either:
 *)
         type InProgressOrder = {
             PlacedOrder     : Order
+            OrderedDrinks   : Drink list
+            OrderedFoods    : Food list
             ServedDrinks    : Drink list
             ServedFoods     : Food list
             PreparedFoods   : Food list

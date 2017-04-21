@@ -5,6 +5,8 @@ open FsCheck
 open CafeApp.Result
 open CafeApp.Errors
 open CafeApp.Domain
+open CafeApp.Commands
+open CafeApp.State
 open CafeApp.Events
 open CafeApp.CommandHandlers
 
@@ -122,10 +124,12 @@ let ServeDrinkTests =
             [ TabOpened tab; OrderPlaced order; DrinkServed (tea, tab.Id); DrinkServed (lemonade, tab.Id) ]
             |> List.fold (evolve) (ClosedTab None) 
         let expected = OrderInProgress { 
-            PlacedOrder = { order with Drinks = [ coke] } ; 
-            ServedDrinks = [lemonade; tea]; 
-            ServedFoods  = []
-            PreparedFoods = [] } 
+            PlacedOrder     = order  
+            OrderedDrinks   = [ coke ]
+            OrderedFoods    = []
+            ServedDrinks    = [ lemonade; tea ]
+            ServedFoods     = []
+            PreparedFoods   = [] } 
 
         Expect.equal actual expected "There should be one remaining drink to serve and 2 served."
 
@@ -141,7 +145,15 @@ let ServeDrinkTests =
         
         [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id) ]
         =>  ServeDrink (coke, tab.Id)
-        =! CannotServeNonOrderedDrink coke
+        =! CanNotServeAlreadyServedDrink coke
+
+    testCase "Cannot serve one not ordered drink during order in progress" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ coke; lemonade ]; Foods = [] }
+        
+        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id) ]
+        =>  ServeDrink (tea, tab.Id)
+        =! CannotServeNonOrderedDrink tea
+
 
     testCase "Cannot serve one drink on a served order" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke ]; Foods = [] }
@@ -186,7 +198,7 @@ let PrepareFoodTests =
         
         [ TabOpened tab; OrderPlaced order; FoodPrepared (salad, tab.Id) ]
         =>  PrepareFood (salad, tab.Id)
-        =! CannotPrepareNonOrderedFood salad
+        =! CanNotPrepareAlreadyPreparedFood salad
 
     testCase "Can serve one food in one in progress order" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke; lemonade ]; Foods = [salad; cookie; sandwich] }
@@ -197,10 +209,12 @@ let PrepareFoodTests =
             ]
             |> List.fold (evolve) (ClosedTab None) 
         let expected = OrderInProgress { 
-            PlacedOrder = { order with Drinks = []; Foods = [sandwich] } ; 
-            ServedDrinks = [lemonade; coke]; 
-            ServedFoods  = []
-            PreparedFoods = [cookie; salad] } 
+            PlacedOrder     = order
+            OrderedDrinks   = []
+            OrderedFoods    = [ sandwich ]
+            ServedDrinks    = [ lemonade; coke ]; 
+            ServedFoods     = []
+            PreparedFoods   = [ cookie; salad ] } 
 
         Expect.equal actual expected "There should be one remaining food to prepare and 2 prepared."
 
@@ -222,4 +236,61 @@ let PrepareFoodTests =
         [ ]
         =>  PrepareFood (cookie, Guid.NewGuid())
         =! CannotPrepareFoodForClosedTab
+  ]
+
+[<Tests>]
+let ServeFoodTests = 
+  testList "Serve Food Transition" [
+    
+    testCase "Cannot serve one not prepared food in one in progress order" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [ salad ] }
+
+        [ TabOpened tab; OrderPlaced order ]
+        =>  PrepareFood (cookie, tab.Id)
+        =! CannotPrepareNonOrderedFood cookie
+
+    testCase "Cannot serve already served food" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [cookie; salad ] }
+        
+        [ TabOpened tab; OrderPlaced order; FoodPrepared (salad, tab.Id); FoodServed (salad, tab.Id) ]
+        =>  ServeFood (salad, tab.Id)
+        =! CanNotServeAlreadyServedFood salad
+
+    testCase "Can serve one prepared food in one in progress order" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ coke; lemonade ]; Foods = [salad; cookie; sandwich] }
+        
+        let actual = 
+            [   TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); DrinkServed (lemonade, tab.Id);
+                FoodPrepared (salad, tab.Id); FoodPrepared (cookie, tab.Id); FoodServed (salad, tab.Id)
+            ]
+            |> List.fold (evolve) (ClosedTab None) 
+        
+        let expected = OrderInProgress { 
+            PlacedOrder     = order
+            OrderedFoods    = [ sandwich ]
+            OrderedDrinks   = [] 
+            ServedDrinks    = [ lemonade; coke ]; 
+            ServedFoods     = [ salad ]
+            PreparedFoods   = [ cookie; salad ] } 
+
+        Expect.equal actual expected "There should be one remaining food to prepare and 2 prepared."
+
+    testCase "Cannot prepare one food on a served order" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ coke ]; Foods = [ cookie ] }
+
+        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed order ]
+        =>  ServeFood (cookie, tab.Id)
+        =! OrderAlreadyServed
+
+    testCase "Cannot serve one food for a non placed order" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [coke; lemonade]; Foods = [ salad ] }
+
+        [ TabOpened tab ]
+        =>  ServeFood (salad, tab.Id)
+        =! CannotServeFoodForNonPlacedOrder
+
+    testCase "Cannot prepare one food to a closed tab" <| fun _ -> 
+        [ ]
+        =>  ServeFood (cookie, Guid.NewGuid())
+        =! CannotServeFoodForClosedTab
   ]
