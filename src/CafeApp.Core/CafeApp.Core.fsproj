@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Name>CafeApp.Core</Name>
@@ -37,15 +37,17 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="any\netstandard1.6\FSharp.Core.optdata">
+    <Content Include="any/netstandard1.6/FSharp.Core.optdata">
       <Paket>True</Paket>
     </Content>
-    <Content Include="any\netstandard1.6\FSharp.Core.sigdata">
+    <Content Include="any/netstandard1.6/FSharp.Core.sigdata">
       <Paket>True</Paket>
     </Content>
     <Compile Include="Result.fs" />
     <Compile Include="Domain.fs" />
     <Compile Include="Errors.fs" />
+    <Compile Include="Commands.fs" />
+    <Compile Include="States.fs" />
     <Compile Include="Events.fs" />
     <Compile Include="CommandHandlers.fs" />
     <None Include="Script.fsx" />
