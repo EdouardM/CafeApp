@@ -19,6 +19,7 @@ namespace CafeApp
             | CanNotPrepareAlreadyPreparedFood of Food
 
             //Possible errors when Food Prepared
+            | CannotServeNonOrderedFood of Food
             | CannotServeNonPreparedFood of Food
             | CannotServeFoodForNonPlacedOrder
             | CannotServeFoodForClosedTab

@@ -241,13 +241,27 @@ let PrepareFoodTests =
 [<Tests>]
 let ServeFoodTests = 
   testList "Serve Food Transition" [
-    
-    testCase "Cannot serve one not prepared food in one in progress order" <| fun _ -> 
+
+    testCase "Cannot serve one not ordered food in one in progress order" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [ salad ] }
 
+        [ TabOpened tab; OrderPlaced order; FoodPrepared (salad, tab.Id) ]
+        => ServeFood (cookie, tab.Id)
+        =! CannotServeNonOrderedFood cookie
+
+    testCase "Cannot serve one not prepared food in one placed order" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [ salad; cookie ] }
+
         [ TabOpened tab; OrderPlaced order ]
-        =>  PrepareFood (cookie, tab.Id)
-        =! CannotPrepareNonOrderedFood cookie
+        => ServeFood (cookie, tab.Id)
+        =! CannotServeNonPreparedFood cookie
+
+    testCase "Cannot serve one not prepared food in one in progress order" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [ salad; cookie ] }
+
+        [ TabOpened tab; OrderPlaced order; FoodPrepared (salad, tab.Id) ]
+        => ServeFood (cookie, tab.Id)
+        =! CannotServeNonPreparedFood cookie
 
     testCase "Cannot serve already served food" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [cookie; salad ] }
@@ -275,7 +289,16 @@ let ServeFoodTests =
 
         Expect.equal actual expected "There should be one remaining food to prepare and 2 prepared."
 
-    testCase "Cannot prepare one food on a served order" <| fun _ -> 
+
+    testCase "Order is served when all drinks & foods are served" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ coke ]; Foods = [salad; cookie] }
+      
+        [   TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); FoodPrepared (salad, tab.Id); 
+            FoodPrepared (cookie, tab.Id); FoodServed (salad, tab.Id) ]
+        =>  ServeFood (cookie, tab.Id)
+        == [ FoodServed (cookie, tab.Id); OrderServed order ]
+
+    testCase "Cannot serve one food on a served order" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke ]; Foods = [ cookie ] }
 
         [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed order ]
@@ -289,7 +312,7 @@ let ServeFoodTests =
         =>  ServeFood (salad, tab.Id)
         =! CannotServeFoodForNonPlacedOrder
 
-    testCase "Cannot prepare one food to a closed tab" <| fun _ -> 
+    testCase "Cannot serve one food to a closed tab" <| fun _ -> 
         [ ]
         =>  ServeFood (cookie, Guid.NewGuid())
         =! CannotServeFoodForClosedTab

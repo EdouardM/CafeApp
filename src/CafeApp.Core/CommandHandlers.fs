@@ -66,7 +66,6 @@ namespace CafeApp
             | ClosedTab _           -> Failure CannotServeClosedTab
             | OpenedTab _           -> Failure CannotServeNonPlacedOrder
 
-
         let (|NonOrderedFood|_|) order food = 
             if List.contains food order.Foods then None else Some food
 
@@ -97,21 +96,60 @@ namespace CafeApp
             | OpenedTab _           -> Failure CannotPrepareFoodForNonPlacedOrder
 
 
-        
+        let (|NotPreparedFood|_|) ipo food = 
+                match List.contains food    ipo.PreparedFoods, List.contains food ipo.PlacedOrder.Foods with
+                | false, true  -> Some food
+                | _             -> None 
+            
         let (|AlreadyServedFood|_|) ipo food = 
             match List.contains food ipo.ServedFoods, List.contains food ipo.OrderedFoods with
             | true, false -> Some food
             | _           -> None
 
-        
+        let (|ServedFoodCompletesOrder|_|) (ipo: InProgressOrder) food = 
+            match ipo.OrderedDrinks, ipo.OrderedFoods with
+                //All drinks are served, all food being prepared or served
+                |  [], [] -> 
+                    //If All food ordered is served then OK
+                    let served = List.sortBy(fun (Food f) -> f.Name) (food::ipo.ServedFoods)
+                    let placed = List.sortBy(fun (Food f) -> f.Name) ipo.PlacedOrder.Foods
+                    if  placed= served then
+                        Some food
+                    else None
+                |  _, _          -> None
+
+        let serveFoodOnPlacedOrder order tableId food =
+            if order.Tab.Id = tableId then
+                match food with
+                | NonOrderedFood order food -> Failure (CannotServeNonOrderedFood food)
+                
+                //Cannot go from Placed to Served order => foods must be prepared
+                | _                         -> Failure (CannotServeNonPreparedFood food)
+            //Wrong Tab Id > Not Ordered food
+            else Failure (CannotServeNonOrderedFood food)
+
+        let serveFoodOnInProgressOrder ipo tableId food =
+            match food with
+            | AlreadyServedFood ipo _           -> Failure (CanNotServeAlreadyServedFood food)
+            | NotPreparedFood ipo food          -> Failure (CannotServeNonPreparedFood food)
+            | ServedFoodCompletesOrder ipo food -> Ok [ FoodServed (food, tableId); OrderServed ipo.PlacedOrder ]
+            | _                                 -> serveFoodOnPlacedOrder ipo.PlacedOrder tableId food
+
+        let handleServeFood food tableId = 
+            function
+            | PlacedOrder order -> serveFoodOnPlacedOrder order tableId food
+            | OrderInProgress ipo   -> serveFoodOnInProgressOrder ipo tableId food
+            | ServedOrder _         -> Failure OrderAlreadyServed
+            | ClosedTab _           -> Failure CannotServeFoodForClosedTab
+            | OpenedTab _           -> Failure CannotServeFoodForNonPlacedOrder
 
         let decide command state =
             match command with
-                | OpenTab tab -> handleOpenTab tab state
-                | PlaceOrder order -> handlePlaceOrder order state
-                | ServeDrink (drink, tableId) -> handleServeDrink drink tableId state
-                | PrepareFood (food, tableId) -> handlePrepareFood food tableId state
-
+            | OpenTab tab -> handleOpenTab tab state
+            | PlaceOrder order -> handlePlaceOrder order state
+            | ServeDrink (drink, tableId) -> handleServeDrink drink tableId state
+            | PrepareFood (food, tableId) -> handlePrepareFood food tableId state
+            | ServeFood (food, tableId) -> handleServeFood food tableId state
 
         ///helper to remove first occurence from list
         let rec removeFirst pred lst =
@@ -122,55 +160,60 @@ namespace CafeApp
                 
         let evolve state event = 
             match state, event with
-                | ClosedTab _, TabOpened tab        -> OpenedTab tab
-                | OpenedTab tab, OrderPlaced order  -> PlacedOrder order
-                | PlacedOrder order, DrinkServed (drink, tabId) -> 
-                    //Remove served drink from list of drinks
-                    let drinks =  removeFirst (fun d -> d = drink) order.Drinks
-                    {
-                        //original order placed
-                        PlacedOrder     = order
-                        //Copy remaining drinks as still ordered
-                        OrderedDrinks   = drinks
-                        //All food is still to be prepared / served
-                        OrderedFoods    = order.Foods
-                        ServedDrinks    = [ drink ]
-                        ServedFoods     = []
-                        PreparedFoods   = []
-                    } |> OrderInProgress
-                | OrderInProgress ipo, DrinkServed (drink, tabId) -> 
-                    //Remove served drink from list of drinks
-                    let drinks =  removeFirst (fun d -> d = drink) ipo.OrderedDrinks
-                    {
-                        ipo with 
-                            OrderedDrinks = drinks
-                            ServedDrinks = drink::ipo.ServedDrinks
-                    } |> OrderInProgress
+            | ClosedTab _, TabOpened tab        -> OpenedTab tab
+            | OpenedTab tab, OrderPlaced order  -> PlacedOrder order
+            | PlacedOrder order, DrinkServed (drink, tabId) -> 
+                //Remove served drink from list of drinks
+                let drinks =  removeFirst (fun d -> d = drink) order.Drinks
+                {
+                    //original order placed
+                    PlacedOrder     = order
+                    //Copy remaining drinks as still ordered
+                    OrderedDrinks   = drinks
+                    //All food is still to be prepared / served
+                    OrderedFoods    = order.Foods
+                    ServedDrinks    = [ drink ]
+                    ServedFoods     = []
+                    PreparedFoods   = []
+                } |> OrderInProgress
+            | OrderInProgress ipo, DrinkServed (drink, tabId) -> 
+                //Remove served drink from list of drinks
+                let drinks =  removeFirst (fun d -> d = drink) ipo.OrderedDrinks
+                {
+                    ipo with 
+                        OrderedDrinks = drinks
+                        ServedDrinks = drink::ipo.ServedDrinks
+                } |> OrderInProgress
 
-                | PlacedOrder order, FoodPrepared (food, tabId) -> 
-                    //Remove served drink from list of drinks
-                    let foods =  removeFirst (fun d -> d = food) order.Foods
-                    {
-                        PlacedOrder     = order
-                        //All food is still to be served
-                        OrderedDrinks   = order.Drinks
-                        //Copy remaining foods as still ordered
-                        OrderedFoods    = foods
-                        ServedDrinks    = []
-                        ServedFoods     = []
-                        PreparedFoods   = [food]
-                    } |> OrderInProgress
+            | PlacedOrder order, FoodPrepared (food, tabId) -> 
+                //Remove served drink from list of drinks
+                let foods =  removeFirst (fun d -> d = food) order.Foods
+                {
+                    PlacedOrder     = order
+                    //All food is still to be served
+                    OrderedDrinks   = order.Drinks
+                    //Copy remaining foods as still ordered
+                    OrderedFoods    = foods
+                    ServedDrinks    = []
+                    ServedFoods     = []
+                    PreparedFoods   = [food]
+                } |> OrderInProgress
 
-                | OrderInProgress ipo, FoodPrepared (food, tabId) -> 
-                    //Remove served food from list of ordered Foods
-                    let foods =  removeFirst (fun d -> d = food) ipo.OrderedFoods
-                    {
-                        ipo with 
-                            OrderedFoods = foods
-                            PreparedFoods = food::ipo.PreparedFoods
-                    } |> OrderInProgress
+            | OrderInProgress ipo, FoodPrepared (food, tabId) -> 
+                //Remove served food from list of ordered Foods
+                let foods =  removeFirst (fun d -> d = food) ipo.OrderedFoods
+                {
+                    ipo with 
+                        OrderedFoods = foods
+                        PreparedFoods = food::ipo.PreparedFoods
+                } |> OrderInProgress
 
-                | OrderInProgress ipo, OrderServed order -> ServedOrder order 
-                | _ -> state
+            | OrderInProgress ipo, FoodServed (food, tabId) -> 
+
+                { ipo with ServedFoods = food::ipo.ServedFoods } 
+                |> OrderInProgress
+
+            | OrderInProgress ipo, OrderServed order -> ServedOrder order 
+            | _ -> state
         
             

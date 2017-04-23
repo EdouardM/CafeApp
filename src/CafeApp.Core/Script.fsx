@@ -40,13 +40,8 @@ let tea = Drink { MenuNumber = 3; Price = 1.2m; Name = "Tea" }
 let sandwich = Food { MenuNumber = 30; Price = 5.5m; Name = "Sandwich" }
 
 
-let order = { Tab = tab; Drinks = [ coke; lemonade ]; Foods = [salad; cookie; sandwich] }
-        
-[ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id) ]
-|> List.fold (evolve) (ClosedTab None) 
-
-let actual = 
-    [   TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); DrinkServed (lemonade, tab.Id);
-        FoodPrepared (salad, tab.Id); FoodPrepared (cookie, tab.Id)
-    ]
-    |> List.fold (evolve) (ClosedTab None) 
+let order = { Tab = tab; Drinks = [ coke ]; Foods = [salad; cookie] }
+      
+[   TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); FoodPrepared (salad, tab.Id); 
+    FoodPrepared (cookie, tab.Id); FoodServed (salad, tab.Id) ]
+|> List.fold (evolve) (ClosedTab None)
