@@ -39,9 +39,7 @@ let coke = Drink { MenuNumber = 1; Price = 2.5m; Name = "Coke" }
 let tea = Drink { MenuNumber = 3; Price = 1.2m; Name = "Tea" }
 let sandwich = Food { MenuNumber = 30; Price = 5.5m; Name = "Sandwich" }
 
-
-let order = { Tab = tab; Drinks = [ coke ]; Foods = [salad; cookie] }
+let order = { Tab = tab; Drinks = [ coke; tea ]; Foods = [] }
       
-[   TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); FoodPrepared (salad, tab.Id); 
-    FoodPrepared (cookie, tab.Id); FoodServed (salad, tab.Id) ]
+[ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id) ]
 |> List.fold (evolve) (ClosedTab None)

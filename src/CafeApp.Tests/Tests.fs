@@ -133,12 +133,21 @@ let ServeDrinkTests =
 
         Expect.equal actual expected "There should be one remaining drink to serve and 2 served."
 
-    testCase "Can serve one drink for order with one drink" <| fun _ -> 
+    testCase "Can complete placed order when serving one drink for one order with one drink" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke ]; Foods = [] }
       
         [ TabOpened tab; OrderPlaced order]
         =>  ServeDrink (coke, tab.Id)
         == [ DrinkServed (coke, tab.Id); OrderServed order ]
+
+    testCase "Can complete in progress order when serving last drink of order in progress" <| fun _ -> 
+        let order = { Tab = tab; Drinks = [ coke; tea ]; Foods = [] }
+      
+        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id) ]
+        =>  ServeDrink (tea, tab.Id)
+        == [ DrinkServed (tea, tab.Id); OrderServed order ]
+
+
 
     testCase "Cannot serve one drink more times than ordered" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke; lemonade ]; Foods = [] }

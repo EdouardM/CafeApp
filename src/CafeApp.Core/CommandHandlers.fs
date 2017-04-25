@@ -29,10 +29,11 @@ namespace CafeApp
         let (|NonOrderedDrink|_|) order drink = 
             if List.contains drink order.Drinks then None else Some drink
             
-        let (|ServedDrinkCompletesOrder|_|) order drink = 
-            match order.Drinks, order.Foods with
-                |  drink::[], [] -> Some drink
-                |  _, _          -> None
+        let (|ServedDrinkCompletesPlacedOrder|_|) order drink = 
+                match order.Drinks, order.Foods with
+                |  d::[], [] when d = drink -> Some drink
+                |  _, _                     -> None
+            
 
         let (|AlreadyServedDrink|_|) ipo drink = 
             match List.contains drink ipo.ServedDrinks, List.contains drink ipo.OrderedDrinks with
@@ -45,7 +46,7 @@ namespace CafeApp
                     | NonOrderedDrink order drink -> 
                         Failure (CannotServeNonOrderedDrink drink)
                     //Order completed with served drink
-                    | ServedDrinkCompletesOrder order drink -> 
+                    | ServedDrinkCompletesPlacedOrder order drink -> 
                         Ok [ DrinkServed (drink, tableId); OrderServed order ]
                     
                     //Drink ordered, order not complete
@@ -53,9 +54,20 @@ namespace CafeApp
             else
                         Failure (CannotServeNonOrderedDrink drink)
 
+        let (|ServedDrinkCompletesInProgressOrder|_|) ipo drink = 
+            //All drinks are served, all food being prepared or served
+            match ipo.OrderedDrinks , ipo.OrderedFoods with
+            | d::[], [] when d  = drink -> 
+                //If All drinks are served then OK
+                let served = List.sortBy(fun (Drink f) -> f.Name) (d::ipo.ServedDrinks)
+                let ordered = List.sortBy(fun (Drink f) -> f.Name) ipo.PlacedOrder.Drinks
+                if  ordered = served then  Some drink else None
+            | _ -> None
+
         let serveDrinkOnInProgressOrder ipo tableId drink = 
             match drink with 
             | AlreadyServedDrink ipo _ -> Failure (CanNotServeAlreadyServedDrink drink)
+            | ServedDrinkCompletesInProgressOrder ipo drink -> Ok [ DrinkServed (drink, tableId) ; OrderServed ipo.PlacedOrder ]
             | _ -> serveDrinkOnPlacedOrder ipo.PlacedOrder tableId drink
 
         let handleServeDrink drink tableId = 
@@ -113,7 +125,7 @@ namespace CafeApp
                     //If All food ordered is served then OK
                     let served = List.sortBy(fun (Food f) -> f.Name) (food::ipo.ServedFoods)
                     let placed = List.sortBy(fun (Food f) -> f.Name) ipo.PlacedOrder.Foods
-                    if  placed= served then
+                    if  placed = served then
                         Some food
                     else None
                 |  _, _          -> None
