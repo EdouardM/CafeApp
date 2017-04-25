@@ -10,3 +10,4 @@ namespace CafeApp
             | ServeDrink    of Drink * Guid
             | PrepareFood   of Food * Guid
             | ServeFood     of Food * Guid
+            | CloseTab      of Payment 

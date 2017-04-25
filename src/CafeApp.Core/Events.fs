@@ -11,6 +11,7 @@ namespace CafeApp
             | FoodServed    of Food * Guid
             | DrinkServed   of Drink * Guid
             | OrderServed   of Order
+            | TabClosed     of Payment
 
         
 

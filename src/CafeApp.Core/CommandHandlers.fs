@@ -34,7 +34,7 @@ namespace CafeApp
                 |  d::[], [] when d = drink -> Some drink
                 |  _, _                     -> None
             
-
+            
         let (|AlreadyServedDrink|_|) ipo drink = 
             match List.contains drink ipo.ServedDrinks, List.contains drink ipo.OrderedDrinks with
             | true, false -> Some drink
@@ -152,16 +152,29 @@ namespace CafeApp
             | PlacedOrder order -> serveFoodOnPlacedOrder order tableId food
             | OrderInProgress ipo   -> serveFoodOnInProgressOrder ipo tableId food
             | ServedOrder _         -> Failure OrderAlreadyServed
-            | ClosedTab _           -> Failure CannotServeFoodForClosedTab
-            | OpenedTab _           -> Failure CannotServeFoodForNonPlacedOrder
+            | ClosedTab _           -> Failure CannotServeClosedTab
+            | OpenedTab _           -> Failure CannotServeNonPlacedOrder
+
+        let handleCloseTab payment = 
+            function
+            | ServedOrder order -> 
+                let orderAmount = 
+                    List.sumBy(fun (Drink d) -> d.Price) order.Drinks
+                    + List.sumBy(fun (Food d) -> d.Price) order.Foods
+                if payment.Amount = orderAmount then
+                    Ok [ TabClosed payment ]
+                else 
+                    Failure <| InvalidPayment (payment.Amount, orderAmount)
+            | _ -> Failure CannotPayNonServedOrder
 
         let decide command state =
             match command with
-            | OpenTab tab -> handleOpenTab tab state
-            | PlaceOrder order -> handlePlaceOrder order state
-            | ServeDrink (drink, tableId) -> handleServeDrink drink tableId state
-            | PrepareFood (food, tableId) -> handlePrepareFood food tableId state
-            | ServeFood (food, tableId) -> handleServeFood food tableId state
+            | OpenTab tab                   -> handleOpenTab tab state
+            | PlaceOrder order              -> handlePlaceOrder order state
+            | ServeDrink (drink, tableId)   -> handleServeDrink drink tableId state
+            | PrepareFood (food, tableId)   -> handlePrepareFood food tableId state
+            | ServeFood (food, tableId)     -> handleServeFood food tableId state
+            | CloseTab payment              -> handleCloseTab payment state
 
         ///helper to remove first occurence from list
         let rec removeFirst pred lst =
@@ -226,6 +239,7 @@ namespace CafeApp
                 |> OrderInProgress
 
             | OrderInProgress ipo, OrderServed order -> ServedOrder order 
+            | ServedOrder order, TabClosed payment -> ClosedTab (Some payment.Tab)
             | _ -> state
         
             

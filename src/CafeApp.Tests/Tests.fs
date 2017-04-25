@@ -184,7 +184,6 @@ let ServeDrinkTests =
         =! CannotServeClosedTab
 ]
 
-
 [<Tests>]
 let PrepareFoodTests = 
   testList "Prepare Food Transition" [
@@ -319,10 +318,49 @@ let ServeFoodTests =
 
         [ TabOpened tab ]
         =>  ServeFood (salad, tab.Id)
-        =! CannotServeFoodForNonPlacedOrder
+        =! CannotServeNonPlacedOrder
 
     testCase "Cannot serve one food to a closed tab" <| fun _ -> 
         [ ]
         =>  ServeFood (cookie, Guid.NewGuid())
-        =! CannotServeFoodForClosedTab
+        =! CannotServeClosedTab
   ]
+
+[<Tests>]
+let CloseTabTests = 
+    testList "Close Tab Transition" [
+
+        testCase "Can close the table by paying full amount" <| fun _ -> 
+            let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [ salad; cookie ] }
+            let payment = { Tab = tab; Amount = 2.5m }
+
+            [ TabOpened tab; OrderPlaced order;
+                DrinkServed (lemonade, tab.Id);
+               FoodPrepared (salad, tab.Id);
+                FoodPrepared (cookie, tab.Id);
+                 FoodServed (cookie, tab.Id);
+                 FoodServed (salad, tab.Id); 
+                 OrderServed order ]
+            => CloseTab payment
+            == [ TabClosed payment ] 
+
+        testCase "Cannot close table by paying incorrect amount" <| fun _ -> 
+            let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [ salad; cookie ] }
+            let payment = { Tab = tab; Amount = 10.5m }
+            [ TabOpened tab; OrderPlaced order;
+                DrinkServed (lemonade, tab.Id);
+                FoodPrepared (salad, tab.Id);
+                FoodPrepared (cookie, tab.Id);
+                FoodServed (cookie, tab.Id);
+                FoodServed (salad, tab.Id); 
+                OrderServed order ]
+            => CloseTab payment
+            =! InvalidPayment (10.5m, 2.5m)
+
+        testCase "Cannot pay unserved order" <| fun _ -> 
+            let order = { Tab = tab; Drinks = [ lemonade ]; Foods = [ salad; cookie ] }
+            let payment = { Tab = tab; Amount = 10.5m }
+            [ TabOpened tab; OrderPlaced order]
+            => CloseTab payment
+            =! CannotPayNonServedOrder
+    ]
