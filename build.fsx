@@ -65,4 +65,4 @@ Target "Deploy" (fun _ ->
   //==> "Deploy"
 
 // start build
-RunTargetOrDefault "BuildApp"
+RunTargetOrDefault "RunTests"
