@@ -50,6 +50,9 @@
       <Paket>True</Paket>
     </Content>
     <Compile Include="ReadModels.fs" />
+    <Compile Include="Projections.fs" />
+    <Compile Include="Queries.fs" />
+    <Compile Include="EventStore.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
