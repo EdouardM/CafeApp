@@ -138,16 +138,14 @@ let ServeDrinkTests =
       
         [ TabOpened tab; OrderPlaced order]
         =>  ServeDrink (coke, tab.Id)
-        == [ DrinkServed (coke, tab.Id); OrderServed order ]
+        == [ DrinkServed (coke, tab.Id); OrderServed (order, payment order) ]
 
     testCase "Can complete in progress order when serving last drink of order in progress" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke; tea ]; Foods = [] }
       
         [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id) ]
         =>  ServeDrink (tea, tab.Id)
-        == [ DrinkServed (tea, tab.Id); OrderServed order ]
-
-
+        == [ DrinkServed (tea, tab.Id); OrderServed (order, payment order) ]
 
     testCase "Cannot serve one drink more times than ordered" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke; lemonade ]; Foods = [] }
@@ -167,7 +165,7 @@ let ServeDrinkTests =
     testCase "Cannot serve one drink on a served order" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke ]; Foods = [] }
         
-        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed order ]
+        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed (order, payment order) ]
         =>  ServeDrink (coke, tab.Id)
         =! OrderAlreadyServed
 
@@ -229,7 +227,7 @@ let PrepareFoodTests =
     testCase "Cannot prepare one food on a served order" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke ]; Foods = [ cookie ] }
 
-        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed order ]
+        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed (order, payment order) ]
         =>  PrepareFood (cookie, tab.Id)
         =! OrderAlreadyServed
 
@@ -304,12 +302,12 @@ let ServeFoodTests =
         [   TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); FoodPrepared (salad, tab.Id); 
             FoodPrepared (cookie, tab.Id); FoodServed (salad, tab.Id) ]
         =>  ServeFood (cookie, tab.Id)
-        == [ FoodServed (cookie, tab.Id); OrderServed order ]
+        == [ FoodServed (cookie, tab.Id); OrderServed (order, payment order) ]
 
     testCase "Cannot serve one food on a served order" <| fun _ -> 
         let order = { Tab = tab; Drinks = [ coke ]; Foods = [ cookie ] }
 
-        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed order ]
+        [ TabOpened tab; OrderPlaced order; DrinkServed (coke, tab.Id); OrderServed (order, payment order) ]
         =>  ServeFood (cookie, tab.Id)
         =! OrderAlreadyServed
 
@@ -340,7 +338,7 @@ let CloseTabTests =
                 FoodPrepared (cookie, tab.Id);
                  FoodServed (cookie, tab.Id);
                  FoodServed (salad, tab.Id); 
-                 OrderServed order ]
+                 OrderServed (order, payment) ]
             => CloseTab payment
             == [ TabClosed payment ] 
 
@@ -353,7 +351,7 @@ let CloseTabTests =
                 FoodPrepared (cookie, tab.Id);
                 FoodServed (cookie, tab.Id);
                 FoodServed (salad, tab.Id); 
-                OrderServed order ]
+                OrderServed (order, payment) ]
             => CloseTab payment
             =! InvalidPayment (10.5m, 2.5m)
 

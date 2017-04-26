@@ -47,7 +47,7 @@ namespace CafeApp
                         Failure (CannotServeNonOrderedDrink drink)
                     //Order completed with served drink
                     | ServedDrinkCompletesPlacedOrder order drink -> 
-                        Ok [ DrinkServed (drink, tableId); OrderServed order ]
+                        Ok [ DrinkServed (drink, tableId); OrderServed (order, payment order) ]
                     
                     //Drink ordered, order not complete
                     | _ ->  Ok [ DrinkServed (drink, tableId)] 
@@ -67,7 +67,8 @@ namespace CafeApp
         let serveDrinkOnInProgressOrder ipo tableId drink = 
             match drink with 
             | AlreadyServedDrink ipo _ -> Failure (CanNotServeAlreadyServedDrink drink)
-            | ServedDrinkCompletesInProgressOrder ipo drink -> Ok [ DrinkServed (drink, tableId) ; OrderServed ipo.PlacedOrder ]
+            | ServedDrinkCompletesInProgressOrder ipo drink -> 
+                Ok [ DrinkServed (drink, tableId) ; OrderServed (ipo.PlacedOrder, payment ipo.PlacedOrder) ]
             | _ -> serveDrinkOnPlacedOrder ipo.PlacedOrder tableId drink
 
         let handleServeDrink drink tableId = 
@@ -144,7 +145,8 @@ namespace CafeApp
             match food with
             | AlreadyServedFood ipo _           -> Failure (CanNotServeAlreadyServedFood food)
             | NotPreparedFood ipo food          -> Failure (CannotServeNonPreparedFood food)
-            | ServedFoodCompletesOrder ipo food -> Ok [ FoodServed (food, tableId); OrderServed ipo.PlacedOrder ]
+            | ServedFoodCompletesOrder ipo food -> 
+                Ok [ FoodServed (food, tableId); OrderServed (ipo.PlacedOrder, payment ipo.PlacedOrder) ]
             | _                                 -> serveFoodOnPlacedOrder ipo.PlacedOrder tableId food
 
         let handleServeFood food tableId = 
@@ -175,14 +177,13 @@ namespace CafeApp
             | PrepareFood (food, tableId)   -> handlePrepareFood food tableId state
             | ServeFood (food, tableId)     -> handleServeFood food tableId state
             | CloseTab payment              -> handleCloseTab payment state
-
         ///helper to remove first occurence from list
         let rec removeFirst pred lst =
             match lst with
             | h::t when pred h -> t
             | h::t -> h::removeFirst pred t
             | _ -> []
-                
+
         let evolve state event = 
             match state, event with
             | ClosedTab _, TabOpened tab        -> OpenedTab tab
@@ -238,7 +239,7 @@ namespace CafeApp
                 { ipo with ServedFoods = food::ipo.ServedFoods } 
                 |> OrderInProgress
 
-            | OrderInProgress ipo, OrderServed order -> ServedOrder order 
+            | OrderInProgress ipo, OrderServed (order, _ ) -> ServedOrder order 
             | ServedOrder order, TabClosed payment -> ClosedTab (Some payment.Tab)
             | _ -> state
         

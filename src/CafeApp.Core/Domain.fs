@@ -64,3 +64,12 @@ Concretely, an aggregate is either:
             PreparedFoods   : Food list
         }
 
+        let orderAmount order =
+            let foodAmount =
+                order.Foods |> List.sumBy (fun (Food f) -> f.Price)
+            let drinksAmount =
+                order.Drinks |> List.sumBy (fun (Drink d) -> d.Price)
+            foodAmount + drinksAmount
+            
+        let payment order =
+            {Tab = order.Tab; Amount = orderAmount order}

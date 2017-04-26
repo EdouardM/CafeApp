@@ -10,7 +10,8 @@ namespace CafeApp
             | FoodPrepared  of Food * Guid
             | FoodServed    of Food * Guid
             | DrinkServed   of Drink * Guid
-            | OrderServed   of Order
+            //Added payment to update Cashier
+            | OrderServed   of Order * Payment
             | TabClosed     of Payment
 
         
