@@ -240,7 +240,7 @@ namespace CafeApp
                 |> OrderInProgress
 
             | OrderInProgress ipo, OrderServed (order, _ ) -> ServedOrder order 
-            | ServedOrder order, TabClosed payment -> ClosedTab (Some payment.Tab)
+            | ServedOrder order, TabClosed payment -> ClosedTab (Some payment.Tab.Id)
             | _ -> state
         
             
