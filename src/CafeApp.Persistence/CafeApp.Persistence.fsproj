@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Name>CafeApp.Persistence</Name>
@@ -37,18 +37,18 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="any\netstandard1.6\FSharp.Core.optdata">
+      <Paket>True</Paket>
+    </Content>
+    <Content Include="any\netstandard1.6\FSharp.Core.sigdata">
+      <Paket>True</Paket>
+    </Content>
     <ProjectReference Include="..\CafeApp.Core\CafeApp.Core.fsproj">
       <Name>CafeApp.Core.fsproj</Name>
       <Project>{17b5f172-e1d8-4ce2-a676-181484cdb78a}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="any/netstandard1.6/FSharp.Core.optdata">
-      <Paket>True</Paket>
-    </Content>
-    <Content Include="any/netstandard1.6/FSharp.Core.sigdata">
-      <Paket>True</Paket>
-    </Content>
     <Compile Include="ReadModels.fs" />
     <Compile Include="Projections.fs" />
     <Compile Include="Queries.fs" />
@@ -146,6 +146,17 @@
       <ItemGroup>
         <Reference Include="FSharp.Core">
           <HintPath>..\..\packages\FSharp.Core\lib\portable-net45+sl5+netcore45\FSharp.Core.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
+      <ItemGroup>
+        <Reference Include="NEventStore">
+          <HintPath>..\..\packages\NEventStore\lib\net40\NEventStore.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>

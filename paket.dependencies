@@ -5,3 +5,4 @@ nuget FSharp.Core
 nuget FsCheck
 nuget Expecto.FsCheck
 nuget Expecto.PerfUtil
+nuget NEventStore
