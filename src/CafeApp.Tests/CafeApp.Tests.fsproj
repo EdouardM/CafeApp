@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Name>CafeApp.Tests</Name>
@@ -39,18 +39,18 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="any\netstandard1.6\FSharp.Core.optdata">
+      <Paket>True</Paket>
+    </Content>
+    <Content Include="any\netstandard1.6\FSharp.Core.sigdata">
+      <Paket>True</Paket>
+    </Content>
     <ProjectReference Include="..\CafeApp.Core\CafeApp.Core.fsproj">
       <Name>CafeApp.Core.fsproj</Name>
       <Project>{17b5f172-e1d8-4ce2-a676-181484cdb78a}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="any/netstandard1.6/FSharp.Core.optdata">
-      <Paket>True</Paket>
-    </Content>
-    <Content Include="any/netstandard1.6/FSharp.Core.sigdata">
-      <Paket>True</Paket>
-    </Content>
     <Compile Include="Generators.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Main.fs" />
