@@ -177,12 +177,7 @@ namespace CafeApp
             | PrepareFood (food, tableId)   -> handlePrepareFood food tableId state
             | ServeFood (food, tableId)     -> handleServeFood food tableId state
             | CloseTab payment              -> handleCloseTab payment state
-        ///helper to remove first occurence from list
-        let rec removeFirst pred lst =
-            match lst with
-            | h::t when pred h -> t
-            | h::t -> h::removeFirst pred t
-            | _ -> []
+
 
         let evolve state event = 
             match state, event with
@@ -190,7 +185,7 @@ namespace CafeApp
             | OpenedTab tab, OrderPlaced order  -> PlacedOrder order
             | PlacedOrder order, DrinkServed (drink, tabId) -> 
                 //Remove served drink from list of drinks
-                let drinks =  removeFirst (fun d -> d = drink) order.Drinks
+                let drinks =  List.removeFirst (fun d -> d = drink) order.Drinks
                 {
                     //original order placed
                     PlacedOrder     = order
@@ -204,7 +199,7 @@ namespace CafeApp
                 } |> OrderInProgress
             | OrderInProgress ipo, DrinkServed (drink, tabId) -> 
                 //Remove served drink from list of drinks
-                let drinks =  removeFirst (fun d -> d = drink) ipo.OrderedDrinks
+                let drinks =  List.removeFirst (fun d -> d = drink) ipo.OrderedDrinks
                 {
                     ipo with 
                         OrderedDrinks = drinks
@@ -213,7 +208,7 @@ namespace CafeApp
 
             | PlacedOrder order, FoodPrepared (food, tabId) -> 
                 //Remove served drink from list of drinks
-                let foods =  removeFirst (fun d -> d = food) order.Foods
+                let foods =  List.removeFirst (fun d -> d = food) order.Foods
                 {
                     PlacedOrder     = order
                     //All food is still to be served
@@ -227,7 +222,7 @@ namespace CafeApp
 
             | OrderInProgress ipo, FoodPrepared (food, tabId) -> 
                 //Remove served food from list of ordered Foods
-                let foods =  removeFirst (fun d -> d = food) ipo.OrderedFoods
+                let foods =  List.removeFirst (fun d -> d = food) ipo.OrderedFoods
                 {
                     ipo with 
                         OrderedFoods = foods
