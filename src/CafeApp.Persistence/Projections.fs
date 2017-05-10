@@ -24,12 +24,12 @@ type ChefActions = {
     RemoveFood          : Guid -> Food -> Async<unit>
     Remove              : Guid -> Async<unit>
 }
-
+    
 type WaiterActions = {
     AddDrinksToServe : Guid -> Drink list -> Async<unit>
-    MarkDrinksServed : Guid -> Drink -> Async<unit>
+    MarkDrinkServed : Guid -> Drink -> Async<unit>
     AddFoodToServe   : Guid -> Food -> Async<unit>
-    MarkFoodsServed  : Guid -> Food -> Async<unit>
+    MarkFoodServed  : Guid -> Food -> Async<unit>
     Remove           : Guid -> Async<unit>
 }
 
@@ -56,14 +56,14 @@ let projectReadModel actions = function
             actions.Chef.AddFoodsToPrepare order.Tab.Id order.Foods  
         ] |> Async.Parallel
     | DrinkServed (drink, tabId) -> 
-        [   actions.Waiter.MarkDrinksServed tabId drink ]
+        [   actions.Waiter.MarkDrinkServed tabId drink ]
         |> Async.Parallel
     | FoodPrepared (food, tabId) -> 
         [   actions.Chef.RemoveFood tabId food ;
             actions.Waiter.AddFoodToServe tabId food
         ] |> Async.Parallel
     | FoodServed (food, tabId) ->
-        [ actions.Waiter.MarkFoodsServed tabId food ]
+        [ actions.Waiter.MarkFoodServed tabId food ]
         |> Async.Parallel
 
     | OrderServed (order, payment) -> 
