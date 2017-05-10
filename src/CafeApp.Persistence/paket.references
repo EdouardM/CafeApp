@@ -1,2 +1,2 @@
 FSharp.Core
-nuget NEventStore
+nuget NEventStore framework: >= net46
