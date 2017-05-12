@@ -17,9 +17,9 @@ let private addDrinksToServe tabId drinks =
             match getTablebyTableId tabId with
             | Some table -> 
                 let tab = { Id = tabId; TableNumber = table.Number } 
-                let todo = {
-                    Tab = tab
-                    Foods = []
+                let todo: WaiterToDo = {
+                    Tab = tab;
+                    Foods = [];
                     Drinks = drinks
                 }
                 waiterToDos.Add(tabId, todo)
@@ -38,9 +38,9 @@ let private addFoodToServe tabId food =
                 match getTablebyTableId tabId with
                 | Some table -> 
                     let tab = { Id = tabId; TableNumber = table.Number } 
-                    let todo = {
-                        Tab = tab
-                        Foods = [ food ]
+                    let todo: WaiterToDo = {
+                        Tab = tab;
+                        Foods = [ food ];
                         Drinks = []
                     }
                     waiterToDos.Add(tabId, todo)
