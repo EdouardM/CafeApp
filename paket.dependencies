@@ -1,9 +1,9 @@
 framework: = net462
+
 source https://www.nuget.org/api/v2
 
 nuget Expecto
-nuget FAKE 
-
+nuget FAKE  
 nuget FsCheck
 nuget Expecto.FsCheck
 nuget Expecto.PerfUtil

@@ -70,7 +70,7 @@ let private remove tabId =
     |> ignore
     |> async.Return
 
-let WaiterActions : WaiterActions =
+let waiterActions : WaiterActions =
     {
         AddDrinksToServe = addDrinksToServe
         MarkDrinkServed  = markDrinkServed
@@ -79,7 +79,7 @@ let WaiterActions : WaiterActions =
         Remove           = remove
     }
 
-let getwaiterToDos = 
+let getwaiterToDos () = 
     waiterToDos.Values
     |> Seq.toList
     |> async.Return

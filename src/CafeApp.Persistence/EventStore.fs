@@ -43,5 +43,5 @@ let getState storeEvents tabId =
 
 type EventStore = {
     GetState : Guid -> Async<State>
-    SaveEvent : State -> Event -> Async<unit>  
+    SaveEvents : State -> Event list -> Async<unit>  
 }

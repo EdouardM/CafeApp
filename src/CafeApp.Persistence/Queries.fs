@@ -18,7 +18,7 @@ type TabQueries = {
 type ToDoQueries = {
     GetChefToDos    : unit -> Async<ChefToDo list>
     GetWaiterToDos  : unit -> Async<WaiterToDo list>
-    GetCashierToDos : unit -> Async<CashierToDo list>
+    GetCashierToDos : unit -> Async<Payment list>
 }
 
 type Queries = {
