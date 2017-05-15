@@ -55,6 +55,12 @@ let getTables () =
     |> Seq.toList
     |> async.Return
 
+let getTableByTableNumber number = 
+    match tables.TryGetValue(number) with
+    | true, table   -> Some table |> async.Return
+    | false, _      -> None |> async.Return
+
 let tableQueries = {
     GetTables = getTables
+    GetTableByTableNumber = getTableByTableNumber
 }

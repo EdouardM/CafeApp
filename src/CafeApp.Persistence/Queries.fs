@@ -13,6 +13,7 @@ Once we are done with the projection of ReadModels, the next step is exposing it
 
 type TabQueries = {
     GetTables : unit -> Async<Table list>
+    GetTableByTableNumber : int -> Async<Table option>
 }
 
 type ToDoQueries = {

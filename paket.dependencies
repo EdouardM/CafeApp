@@ -7,5 +7,8 @@ nuget FAKE
 nuget FsCheck
 nuget Expecto.FsCheck
 nuget Expecto.PerfUtil
+nuget FSharp.Core
+nuget FSharp.Data
 nuget NEventStore
 nuget Newtonsoft.Json
+nuget Suave
